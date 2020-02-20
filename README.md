@@ -29,7 +29,7 @@ The Hockey Fight dataset contained 1000 video clips with half containing violent
 
 Image frames are extracted from these videos using the script in `/data/video2img.sh` (gotten from [JJBOY](https://github.com/JJBOY/C3D-pytorch)) at a sampling rate of 16 frames per second. This value was chosen arbitrarily and is good enough for a start. The different image frames are then collected into stacks with 16 frames per stack using `/data/create_stacks.py` using information provided in the `/data/train.txt` and `/data/test.txt` that specifies the starting point of each stack. This was necessary as the frames were sent in overlapping sequences.
 
-The entire dataset was divided into training set and test set in the ratio 3:1. This was according to the method in [1]. Both sets were then bundled into the HDF5 format using the h5py package.
+The entire dataset was divided into training set and test set in the ratio 3:1. This was according to the method in [1]. Both sets were then bundled into the HDF5 format using the `h5py` package.
 
 ### Data pre-processing
 
@@ -56,7 +56,21 @@ The training and test datasets were uploaded to Google Drive since all training 
 * RAM: ~12.6 GB Available
 * Disk: ~33 GB Available
 
-## Results
+## Model Results
+
+### Test Loss
+
+<img src="images/loss_graph.png" width="100%" heigth="100%">
+
+### Test Accuracy
+
+<img src="images/accuracy_graph.png" width="100%" heigth="100%">
+
+The best accuracy of 84.06% was obtained at the 36th training epoch.
+
+This preliminary model is definitely far from the best. Apparently, the model was subject to overfiiting and a lot of improvement can be achieved with proper training.
+
+## Edge Inferencing
 
 ## Further Steps
 
