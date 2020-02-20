@@ -5,6 +5,7 @@ This project implements a 3D Convolutional Neural Network (3D-CNN) for detecting
 ## System Pipeline
 
 <img src="images/pipeline.png" width="100%" heigth="100%">
+Image source: [1]
 
 Each stage in the project pipeline is displayed in the image below:
 
@@ -24,18 +25,36 @@ The 3D CNN model was custom trained using the architecture shown below:
 
 Three datasets were combined for this task: [Hockey Fight](http://academictorrents.com/details/38d9ed996a5a75a039b84cf8a137be794e7cee89/tech), [Movies](http://academictorrents.com/details/70e0794e2292fc051a13f05ea6f5b6c16f3d3635) and [Crowd Violence](https://www.openu.ac.il/home/hassner/data/violentflows/).
 
-Hocket
+The Hockey Fight dataset contained 1000 video clips with half containing violent scenes and the other non-violent. The Movies dataset contained 200 video clips with half containing violent scenes and the other non-violent. The Crowd violence dataset contained 246 video clips from YouTube with half containing violent scenes and the other non-violent. This gave a total of 1446 videos, with 723 videos each violent and non-violent.
 
+Image frames are extracted from these videos using the script in `/data/video2img.sh` (gotten from [JJBOY](https://github.com/JJBOY/C3D-pytorch)) at a sampling rate of 16 frames per second. This value was chosen arbitrarily and is good enough for a start. The different image frames are then collected into stacks with 16 frames per stack using `/data/create_stacks.py` using information provided in the `/data/train.txt` and `/data/test.txt` that specifies the starting point of each stack. This was necessary as the frames were sent in overlapping sequences.
+
+The entire dataset was divided into training set and test set in the ratio 3:1. This was according to the method in [1]. Both sets were then bundled into the HDF5 format using the h5py package.
 
 ### Data pre-processing
 
+Each image stack is first resized to 128 by 171 pixels before they are square cropped to 112 by 112 px according to the input shape of the 3D CNN. They are then converted to PyTorch tensors and each of the RGB frames normalized with `mean=[0.485, 0.456, 0.406]` and `std=[0.229, 0.224, 0.225]`. This is a common transformation practice that is derived from the normalization introduced by ImageNet.
+
 ### Hyperparameters and Optimization
+
+For the training task, the following hyperparameters were used:
+
+* `num_epochs    = 100`
+* `batch_size    = 30`
+* `learning_rate = 0.003`
+
+These parameters are in no way optimal, but gave fairly good result for a start.
+
+The stochastic gradient descent optimizer was used for learning with Cross Entropy function was used as the criterion for classification loss.
 
 ### Training Setup
 
-The links to the datasets used are
+The training and test datasets were uploaded to Google Drive since all training was done in Google Colab. Colab is a free cloud service that gives access to free GPU instances and supports most known libraries including PyTorch that was used for this project. The training environment has the following specifications:
 
-
+* GPU: 1xTesla K80 ,compute 3.7, having 2496 CUDA cores, 12GB GDDR5 VRAM
+* CPU: 1xsingle core hyper threaded Xeon Processors @2.3Ghz i.e. (1 core, 2 threads)
+* RAM: ~12.6 GB Available
+* Disk: ~33 GB Available
 
 ## Results
 
