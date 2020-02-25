@@ -66,7 +66,7 @@ The training and test datasets were uploaded to Google Drive since all training 
 
 <img src="images/accuracy_graph.png" width="100%" heigth="100%">
 
-The best accuracy of 84.06% was obtained at the 36th training epoch.
+The best accuracy of 84.428% was obtained at the 36th training epoch.
 
 This preliminary model is definitely far from the best. Apparently, the model was subject to overfiiting and a lot of improvement can be achieved with proper training.
 
