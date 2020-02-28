@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}GET Request{% endblock %}
+{% block content %}
+	<h1>You simply loaded this page!</h1>
+	<form method="POST" action="/post">
+		<div class="center">
+			<input name='person'>
+			<button type="submit">Submit</button>
+		</div>
+	</form>
+{% endblock %}
