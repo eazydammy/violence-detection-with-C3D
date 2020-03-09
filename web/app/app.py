@@ -1,10 +1,34 @@
+#!/usr/bin/env python3
+import sys
 import cv2
+import string
+import random
+import argparse
 import numpy as np
 from inference import Network
 
-model = "../model/model37.xml"
+model_path = "../model/model37.xml"
 
-video_path = "../video/vi22.avi" #non21.avi #vi22.avi
+video_path = "../video/vi16.avi"
+#non21.avi non25.avi
+#vi22.avi vi16.avi
+
+def get_args():
+    '''
+    Gets the arguments from the command line.
+    '''
+    parser = argparse.ArgumentParser("Run inference on an input video")
+    # -- Create the descriptions for the commands
+    m_desc = "The path to the model XML file"
+    v_desc = "The path to the video file"
+
+    # -- Create the arguments
+    parser.add_argument("-m", help=m_desc, default="../model/model37.xml")
+    parser.add_argument("-v", help=v_desc, default="../video/vi22.avi")
+    args = parser.parse_args()
+
+    return args
+
 
 def prepare_frames(video_path):
     '''
@@ -22,7 +46,7 @@ def prepare_frames(video_path):
         if not flag:
             break
         
-        key_pressed = cv2.waitKey(1) #(1000/16 = 62.5fps)
+        #key_pressed = cv2.waitKey(60)
 
         frame = frame/255
 
@@ -39,8 +63,8 @@ def prepare_frames(video_path):
         all_frames = np.append(all_frames, frame, axis=0) # (num, 3, 112, 112)
         
         # Break if escape key pressed
-        if key_pressed == 27:
-            break
+        # if key_pressed == 27:
+        #     break
 
     # Release the capture, and destroy any OpenCV windows
     cap.release()
@@ -70,22 +94,80 @@ def prepare_stacks(all_frames):
 
     all_stacks = all_stacks.transpose((0,2,1,3,4))
     #stack now is ((1,3,16,w-112,h-112))
+    # print("Number of frames", num_frames)
+    # print("Number of stacks", all_stacks.shape)
 
     return all_stacks
 
-def draw_indicator(frame, result, width, height):
+def draw_indicator(video_path, results):
     '''
     Draw bounding boxes onto the frame.
     '''
-    for box in result[0][0]: # Output shape is 1x1x100x7
-        conf = box[2]
-        if conf >= 0.5:
-            xmin = int(box[3] * width)
-            ymin = int(box[4] * height)
-            xmax = int(box[5] * width)
-            ymax = int(box[6] * height)
-            cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (255,0,0), 1)
-    return frame
+
+    # perform trick to stretch out overlapping stacked results
+    aug_results = []
+    for i, result in enumerate(results):
+        if i > 0:
+            aug_results = aug_results + ([result] * 16)
+        else:
+            aug_results = aug_results + ([result] * 8)
+
+    cap = cv2.VideoCapture(video_path)
+    cap.open(video_path)
+
+    true_num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    true_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    true_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+    #right pad (with stretch) in case of missing frame results
+    while len(aug_results) < true_num_frames:
+        aug_results.append(aug_results[-1])
+    
+    letters = string.ascii_lowercase
+    file_name = ''.join(random.choice(letters) for i in range(10)) + ".mp4"
+
+    out = cv2.VideoWriter(file_name, cv2.VideoWriter_fourcc(*'mp4v'), fps, (true_width,true_height))
+
+
+    font = cv2.FONT_HERSHEY_SIMPLEX 
+    org = (10, 33) 
+    fontScale = 0.5
+    text_color = (255, 255, 255) 
+    thickness = 1
+   
+    while cap.isOpened():
+        flag, frame = cap.read()
+        
+        if not flag:
+            break
+
+        frame_is_violent = aug_results.pop(0)
+        
+        colors = [(0,255,0), (0,0,255)]
+        color = colors[frame_is_violent]
+
+        alerts = ['','Violent!']
+        alert = alerts[frame_is_violent]
+            
+        out_frame = cv2.rectangle(frame, (10, 10), (70, 45), color, cv2.FILLED)
+        out_frame = cv2.putText(out_frame, alert, org, font,  
+                   fontScale, text_color, thickness, cv2.LINE_AA)
+        #_, out_frame = cv2.imencode('.jpg', out_frame)
+        
+        # Send frame to the ffmpeg server
+        #sys.stdout.buffer.write(out_frame)
+        #sys.stdout.flush()
+
+        # Write out the frame
+        out.write(out_frame)
+    
+    # Release the capture, and destroy any OpenCV windows
+    out.release()
+    cap.release()
+    cv2.destroyAllWindows()
+
+    return file_name
 
 def perform_inference(model, all_stacks):
     
@@ -93,7 +175,9 @@ def perform_inference(model, all_stacks):
     plugin = Network()
     
     # Load the network model into the IE
-    plugin.load_model(model, "CPU")
+    plugin.load_model(model_path, "CPU")
+
+    results = []
 
     for stack in all_stacks:
 
@@ -102,7 +186,9 @@ def perform_inference(model, all_stacks):
         # perform inference on each stack
         result = plugin.sync_inference(stack)
 
-        print(result)
+        results.append(np.argmax(result))
+
+    return results
 
 def crop_center(img, cropx, cropy):
     y, x, _ = img.shape
@@ -118,9 +204,12 @@ def normalize(frame, mean, std):
     return output
 
 def main():
-    all_frames = prepare_frames(video_path)
+    args = get_args()
+    all_frames = prepare_frames(args.v)
     all_stacks = prepare_stacks(all_frames)
-    perform_inference(model, all_stacks)
+    results = perform_inference(args.m, all_stacks)
+    name = draw_indicator(args.v, results)
+    return str(name)
 
 if __name__ == "__main__":
     main()
