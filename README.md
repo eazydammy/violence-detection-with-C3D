@@ -72,21 +72,52 @@ This preliminary model is definitely far from the best. Apparently, the model wa
 
 ## Edge Inferencing
 
-## Further Steps
+### The Intel OpenVINO™ toolkit
 
-* Train the model to better accuracy by searching for the best hyperparameters and optimizer
-* Implement multi-camera feed system
-* Build complete web app for visualization
-* Implement geolocation for improved violence event reporting
+The OpenVINO™ toolkit comes with two special tools that we have used heavily in this project, the _Model Optimizer (MO)_ and _Inference Engine (IE)_. The MO analyses the raw deep learning model from the different frameworks (PyTorch in this case) and adjusts for optimal execution on edge devices. Techniques like freezing, fusion and quantization help to reduce inference execution times while keeping the accuracy at a reasonable threshold. The MO generates a generix XML file describing the optimized model architecture and BIN file containing the weights of each layer in the model. The IE takes these files and ensures accelerated inferencing on Intel based processors (like the AWS Instance this project has been setup). The IE is originally a C++ Library but exposes an API that is used to interface with it in Python as used in this project. For the most part, the boilerplate code provided in the Intel Edge AI Fundamentals course was used to build this project.
+
+### Modifiable Parameters
+
+Currently, the model accepts two parameters as follows:
+
+`-m model_path` = "The path to the model XML file"
+`-v video_path` = "The path to the video file"
+
+However, most of these have been hidden behind the web app API so that users do all these without worrying about the complexities. Since only one model has been provided in the cloud instance, that argument is not exposed to the public, but is setup already and simply uses the default value. The video path is sent to the model through the `/getinference/video_path` API call. The server parses this and sends to the model via the `-v video_path` argument. In the future, arguments for the device-specific plugin (CPU, GPU, FPGA etc) or processing type (SYNC, ASYNC) can be added.
 
 ## Running the Application
+
 To test the model, you click on this link to load the Violence Detection Web App. 
+
 <img src="images/violencedet.png" width="100%" heigth="100%">
 
 Once on the page as shown above, click on 'Run Inference'. This will load the inference page that will provide you with a list of videos with which to choose from. 
+
 <img src = "images/inference.png" width="100%" heigth="100%">
 
-Click on any of the links selected and the results will then be displayed. 
+Click on any of the links selected and the video results will then be displayed with the red indicator for violent scences and green indicator for peaceful scenes.
+
+
+
+## Further Steps
+
+* Train the model to better accuracy by searching for the best hyperparameters and optimizer
+
+The accuracy of identifying violent scences in input video stream can be improved significantly by reworking the training pipeline. Most of the hyperparameters used were by rule-of-thumb, and can be reviewed to search for the best parameters for optimal performance while considering precision as well.
+
+* Implement multi-camera feed system
+
+It is intended that this system is deployed across distributed surveilance camera systems. A central feed system that processes these input streams while still keeping the performance in terms of speed and reliablity is possible. Already, resources by Intel OpenVINO covering this subject have been reviewed and can be implemented in the future.
+
+* Build complete web app for visualization
+
+The web app (for demo) has only been roughly built. A good part of the components have not been connected to fit well. It is intended that the web app is completed for effective monitoring of the performance of this system.
+
+* Implement geolocation for improved violence event reporting
+
+Another important feature that may be considered in the future will be to add geolocation to every surveillance camera installation for informational purposes.
+
+
 
 ## References
 
