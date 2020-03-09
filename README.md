@@ -79,6 +79,15 @@ This preliminary model is definitely far from the best. Apparently, the model wa
 * Build complete web app for visualization
 * Implement geolocation for improved violence event reporting
 
+## Running the Application
+To test the model, you click on this link to load the Violence Detection Web App. 
+<img src="images/violencedet.png" width="100%" heigth="100%">
+
+Once on the page as shown above, click on 'Run Inference'. This will load the inference page that will provide you with a list of videos with which to choose from. 
+<img src = "images/inference.png" width="100%" heigth="100%">
+
+Click on any of the links selected and the results will then be displayed. 
+
 ## References
 
 [1] Ullah, F. U. M., Ullah, A., Muhammad, K., Haq, I. U., & Baik, S. W. (2019). Violence Detection Using Spatiotemporal Features with 3D Convolutional Neural Network. *Sensors*, 19(11), 2472. https://doi.org/10.3390/s19112472
