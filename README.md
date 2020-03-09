@@ -87,7 +87,7 @@ However, most of these have been hidden behind the web app API so that users do 
 
 ## Running the Application
 
-To test the model, you click on this link to load the Violence Detection Web App. 
+To test the model, you [click on this link to load the Violence Detection Web App](https://keen-lumiere-1599db.netlify.com/). 
 
 <img src="images/violencedet.png" width="100%" heigth="100%">
 
@@ -96,8 +96,6 @@ Once on the page as shown above, click on 'Run Inference'. This will load the in
 <img src = "images/inference.png" width="100%" heigth="100%">
 
 Click on any of the links selected and the video results will then be displayed with the red indicator for violent scences and green indicator for peaceful scenes.
-
-
 
 ## Further Steps
 
@@ -116,8 +114,6 @@ The web app (for demo) has only been roughly built. A good part of the component
 * Implement geolocation for improved violence event reporting
 
 Another important feature that may be considered in the future will be to add geolocation to every surveillance camera installation for informational purposes.
-
-
 
 ## References
 
